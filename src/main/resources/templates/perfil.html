@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Perfil de Usuario - Sabor y Tradición</title>
+    <style>
+        :root {
+            /* Ajuste a paleta clara */
+            --color-fondo: #f8f9fa;
+            --color-texto: #333;
+            --color-acento: #d9534f; /* Rojo que usamos en botones */
+            --color-secundario: #ffffff;
+            --color-card: #ffffff;
+            --color-borde: #dee2e6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            color: var(--color-acento);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--color-borde);
+            padding-bottom: 0.5rem;
+        }
+
+        nav {
+            background-color: var(--color-secundario);
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li a {
+            color: var(--color-texto);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav ul li a:hover {
+            color: var(--color-acento);
+        }
+
+        section {
+            max-width: 900px;
+            margin: 2rem auto;
+            background-color: var(--color-card);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        table th, table td {
+            border: 1px solid var(--color-borde);
+            padding: 0.8rem;
+            text-align: center;
+        }
+        table th {
+            background-color: #f1f1f1;
+            color: var(--color-acento);
+        }
+        table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        article {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-borde);
+        }
+
+        .btn-logout {
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            padding: 0.7rem 1.2rem;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+        .btn-logout:hover {
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <ul>
+        <li><a th:href="@{/index}">Inicio</a></li>
+        <li><a th:href="@{/perfil}">Mi Perfil</a></li>
+        <li><a th:href="@{/index#resenas}">Reseñas</a></li>
+    </ul>
+</nav>
+
+<section id="usuario">
+    <h2>Datos del Usuario</h2>
+    <p><strong>Nombre:</strong> <span th:text="${usuario.nombre}">Nombre Usuario</span></p>
+    <p><strong>Correo:</strong> <span th:text="${usuario.email}">correo@ejemplo.com</span></p>
+    <p><strong>ID Cliente:</strong> <span th:text="${'#' + usuario.id_usuario}">#000</span></p>
+
+    <a th:href="@{/perfil/cerrar}" class="btn-logout">Cerrar Sesión</a>
+</section>
+
+<section id="reseñas">
+    <h2>Mis Reseñas</h2>
+    <div th:if="${#lists.isEmpty(usuario.resenas)}">
+        <p class="text-muted">Aún no has escrito ninguna reseña.</p>
+    </div>
+    <article th:each="resena : ${usuario.resenas}">
+        <p>
+            <span th:text="${resena.comentario}">Comentario</span>
+            <span class="text-warning" th:each="i : ${#numbers.sequence(1, resena.calificacion)}">⭐</span>
+        </p>
+        <p><em>Fecha: <span th:text="${resena.fecha}">00/00/0000</span></em></p>
+    </article>
+</section>
+
+<section id="pedidos">
+    <h2>Reservas Realizadas</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>ID Reserva</th>
+            <th>Fecha / Hora</th>
+            <th>Platos</th>
+            <th>Personas</th>
+            <th>Mesa</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(usuario.reservas)}">
+            <td colspan="5">No tienes reservas registradas.</td>
+        </tr>
+        <tr th:each="reserva : ${usuario.reservas}">
+            <td th:text="${reserva.idReserva}">000</td>
+            <td th:text="${reserva.fecha + ' - ' + reserva.hora}">00/00/0000</td>
+            <td>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li th:each="plato : ${reserva.platosPedidos}" th:text="${plato.nombre}">Plato</li>
+                    <li th:if="${#lists.isEmpty(reserva.platosPedidos)}" class="text-muted small">Sin platos pedidos</li>
+                </ul>
+            </td>
+            <td th:text="${reserva.cantidadPersonas}">0</td>
+            <td th:text="${reserva.mesaAsignada != null ? 'Mesa ' + reserva.mesaAsignada.idMesa : 'Pendiente'}">Mesa</td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+
+</body>
+</html>

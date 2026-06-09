@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sabor y Tradición</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3" href="/">
+                SABOR <span class="text-warning">&</span> TRADICIÓN
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuNavegacion">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="menuNavegacion">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item"><a class="nav-link fw-semibold px-3" href="#historia">Nuestra Historia</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold px-3" href="#carta">La Carta</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold px-3" href="#contacto">Contacto</a></li>
+                    <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
+                        <a th:href="@{/reservar}" class="btn btn-dark fw-bold px-4 rounded-pill">RESERVAR MESA</a>
+                    </li>
+                    <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
+                        <a th:href="@{/perfil}" class="btn btn-dark fw-bold px-4 rounded-pill">Perfil</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="d-flex align-items-center justify-content-center text-center text-white"
+        th:style="'height: 75vh; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url(' + @{/img/banner.jpg} + ') no-repeat center center / cover;'">
+        <div class="container px-4">
+            <h1 class="display-2 fw-bold mb-4">Experiencia Culinaria</h1>
+            <p class="fs-4 mb-5 fw-light">Descubre los sabores auténticos del Perú en un ambiente inigualable.</p>
+            <a th:href="@{/reservar}" class="btn btn-warning btn-lg fw-bold px-5 py-3 rounded-pill shadow">EMPEZAR
+                RESERVA</a>
+        </div>
+    </header>
+
+    <section id="historia" class="py-5 bg-white">
+        <div class="container py-5 text-center">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <p class="text-warning fw-bold mb-2">SOBRE NOSOTROS</p>
+                    <h2 class="fw-bold mb-4">Tradición que trasciende generaciones</h2>
+                    <p class="lead text-muted">
+                        Ubicados en el corazón de la ciudad, nacemos de la pasión por los ingredientes de nuestra
+                        tierra.
+                        Cada plato que servimos cuenta una historia de herencia familiar, técnica moderna y un profundo
+                        respeto
+                        por el producto local. Tu mesa te espera.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="carta" class="py-5">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Nuestra Carta</h2>
+                <p class="text-muted">Conoce nuestras experiencias destacadas y platos de autor.</p>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4">
+                        <img th:src="@{/img/experiencia 1.jpg}" class="card-img-top" alt="Mar y Tierra"
+                            style="height: 200px; object-fit: cover; border-top-left-radius: var(--bs-border-radius-xl); border-top-right-radius: var(--bs-border-radius-xl);">
+                        <div class="card-body p-4 text-center">
+                            <span class="badge bg-dark rounded-pill px-3 py-2 mb-3">Experiencia</span>
+                            <h5 class="fw-bold text-success">Mar y Tierra</h5>
+                            <p class="text-muted small mt-2">Ceviche carretillero + Lomo saltado tradicional + Pisco
+                                Sour clásico.</p>
+                            <h5 class="fw-bold text-dark mt-3">S/ 120.00</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4">
+                        <img th:src="@{/img/experiencia 2.jpg}" class="card-img-top" alt="Degustación Andina"
+                            style="height: 200px; object-fit: cover; border-top-left-radius: var(--bs-border-radius-xl); border-top-right-radius: var(--bs-border-radius-xl);">
+                        <div class="card-body p-4 text-center">
+                            <span class="badge bg-dark rounded-pill px-3 py-2 mb-3">Experiencia</span>
+                            <h5 class="fw-bold text-success">Degustación Andina</h5>
+                            <p class="text-muted small mt-2">Menú de 5 tiempos exclusivos con ingredientes autóctonos de
+                                la sierra.</p>
+                            <h5 class="fw-bold text-dark mt-3">S/ 150.00</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4">
+                        <img th:src="@{/img/experiencia 3.jpg}" class="card-img-top" alt="Ruta Marina"
+                            style="height: 200px; object-fit: cover; border-top-left-radius: var(--bs-border-radius-xl); border-top-right-radius: var(--bs-border-radius-xl);">
+                        <div class="card-body p-4 text-center">
+                            <span class="badge bg-dark rounded-pill px-3 py-2 mb-3">Experiencia</span>
+                            <h5 class="fw-bold text-success">Ruta Marina</h5>
+                            <p class="text-muted small mt-2">Tiradito al ají amarillo + Causa de pulpo + Arroz con
+                                mariscos ahumado.</p>
+                            <h5 class="fw-bold text-dark mt-3">S/ 95.00</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4" th:each="plato : ${platos}">
+                    <div class="card h-100 border-0 shadow-sm rounded-4">
+                        <img th:src="@{${plato.imagen}}" class="card-img-top" th:alt="${plato.nombre}"
+                             style="height: 200px; object-fit: cover; border-top-left-radius: var(--bs-border-radius-xl); border-top-right-radius: var(--bs-border-radius-xl);">
+
+                        <div class="card-body p-4 text-center">
+                            <!-- Nombre del plato -->
+                            <h5 class="fw-bold" th:text="${plato.nombre}">Nombre del Plato</h5>
+
+                            <!-- Descripción -->
+                            <p class="text-muted small mt-2" th:text="${plato.descripcion}">Descripción corta del plato.</p>
+
+                            <!-- Precio -->
+                            <h6 class="fw-bold text-dark mt-3" th:text="${'S/ ' + #numbers.formatDecimal(plato.precio, 1, 2)}">S/ 0.00</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <!-- Título de la sección -->
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Mira las reseñas de nuestros clientes</h2>
+                <div class="mx-auto" style="width: 60px; height: 3px; background-color: var(--bs-primary);"></div>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <!-- Iteración de reseñas -->
+                <div class="col-md-4" th:each="resena : ${resenas}">
+                    <div class="card h-100 border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="mb-2 text-warning">
+                                <span th:each="i : ${#numbers.sequence(1, resena.calificacion)}">★</span>
+                            </div>
+
+                            <p class="text-muted fst-italic mb-4" th:text="${'“' + resena.comentario + '”'}">
+                                "Excelente experiencia."
+                            </p>
+
+                            <hr class="text-muted opacity-25">
+
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <h6 class="fw-bold mb-0" th:text="${resena.nombre_usuario}">Usuario</h6>
+                                    <small class="text-muted" style="font-size: 0.8rem;" th:text="${resena.fecha}">14/05/2026</small>
+                                </div>
+                                <i class="bi bi-chat-quote text-primary opacity-50 fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contacto" class="bg-dark text-white py-5">
+        <div class="container py-3">
+            <div class="row text-center text-md-start">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="fw-bold text-warning mb-3">DIRECCIÓN</h5>
+                    <p class="text-light mb-0">Av.</p>
+                    <p class="text-light">Distrito Central, Lima</p>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="fw-bold text-warning mb-3">HORARIOS</h5>
+                    <p class="text-light mb-0">Lunes a Sábado: 12:00m - 11:00pm</p>
+                    <p class="text-light">Domingos: 12:00m - 5:00pm</p>
+                </div>
+                <div class="col-md-4 text-center text-md-end">
+                    <h5 class="fw-bold text-warning mb-3">CONTÁCTANOS</h5>
+                    <p class="text-light fw-bold fs-5 mb-1">(01) 555-1234</p>
+                    <a th:href="@{/reservar/gestion}" class="btn btn-outline-light btn-sm rounded-pill mt-2">Gestionar
+                        Mi Reserva</a>
+                </div>
+            </div>
+            <div class="border-top border-secondary mt-4 pt-4 text-center text-secondary small">
+                <p class="mb-0">Sabor & Tradición</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
