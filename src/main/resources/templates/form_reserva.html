@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Reserva tu Mesa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #111;
+            color: white;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.4s;
+        }
+
+        .btn-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 1px solid white;
+            background: none;
+            color: white;
+            margin: 5px;
+        }
+
+        .btn-circle.selected {
+            background: white;
+            color: black;
+        }
+
+        .bg-overlay {
+            min-height: 100vh;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-overlay d-flex align-items-center"
+        th:style="'background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url(' + @{/img/reserva.jpg} + ') center/cover no-repeat; min-height: 100vh;'">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 text-center">
+                    <form th:action="@{/reservar/guardar}" method="post" th:object="${reserva}" id="reservaForm">
+                        <div th:if="${errorMesas != null}" class="alert alert-danger fw-bold shadow">
+                            <span th:text="${errorMesas}"></span>
+                        </div>
+                        <div id="step1" class="step active">
+                            <h2 class="mb-4">Elige la cantidad de personas</h2>
+                            <div class="mb-5">
+                                <button type="button" class="btn-circle selected"
+                                    onclick="setPersonas(1, this)">1</button>
+                                <button type="button" class="btn-circle" onclick="setPersonas(2, this)">2</button>
+                                <button type="button" class="btn-circle" onclick="setPersonas(3, this)">3</button>
+                                <button type="button" class="btn-circle" onclick="setPersonas(4, this)">4</button>
+                                <button type="button" class="btn-circle" onclick="setPersonas(5, this)">5</button>
+                                <input type="hidden" th:field="*{cantidadPersonas}" id="inputPersonas" value="1">
+                            </div>
+                            <a href="/" class="btn btn-link text-white text-decoration-none me-3">Cancelar</a>
+                            <button type="button" class="btn btn-outline-light px-5"
+                                onclick="nextStep(2)">Continuar</button>
+                        </div>
+
+                        <div id="step2" class="step">
+                            <h2 class="mb-4">Elige fecha y hora</h2>
+                            <input type="date" class="form-control mb-3 bg-transparent text-white" th:field="*{fecha}"
+                                id="fecha" required>
+                            <input type="time" class="form-control mb-4 bg-transparent text-white" th:field="*{hora}"
+                                id="hora" required>
+                            <div id="errorMsg" class="text-danger mb-3 d-none fw-bold">Por favor, completa la fecha y la
+                                hora.</div>
+                            <button type="button" class="btn btn-link text-white" onclick="nextStep(1)">Atrás</button>
+                            <button type="button" class="btn btn-outline-light px-5"
+                                onclick="nextStep(3)">Continuar</button>
+                        </div>
+
+                        <div id="step3" class="step">
+                            <h2 class="mb-4">Tus datos</h2>
+                            <input type="text" class="form-control mb-3 bg-transparent text-white"
+                                placeholder="Nombre completo" th:field="*{nombreCliente}" id="nombreCliente" required>
+                            <input type="text" class="form-control mb-5 bg-transparent text-white"
+                                placeholder="Teléfono" th:field="*{telefono}" id="telefono" required>
+                            <button type="button" class="btn btn-link text-white" onclick="nextStep(2)">Atrás</button>
+                            <button type="submit" class="btn btn-warning px-5 fw-bold">CONFIRMAR RESERVA</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setPersonas(n, btn) {
+            document.getElementById('inputPersonas').value = n;
+            document.querySelectorAll('.btn-circle').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            localStorage.setItem('inputPersonas', n);
+        }
+
+        function nextStep(n) {
+            if (n === 3) {
+                let f = document.getElementById('fecha').value;
+                let h = document.getElementById('hora').value;
+                if (f === '' || h === '') {
+                    document.getElementById('errorMsg').classList.remove('d-none');
+                    return;
+                }
+                document.getElementById('errorMsg').classList.add('d-none');
+            }
+
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + n).classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const campos = ['fecha', 'hora', 'nombreCliente', 'telefono', 'inputPersonas'];
+
+            campos.forEach(id => {
+                let guardado = localStorage.getItem(id);
+                if (guardado) {
+                    document.getElementById(id).value = guardado;
+                }
+            });
+
+            campos.forEach(id => {
+                document.getElementById(id).addEventListener('input', (e) => {
+                    localStorage.setItem(id, e.target.value);
+                });
+            });
+
+            document.getElementById('reservaForm').addEventListener('submit', () => {
+                localStorage.clear();
+            });
+        });
+    </script>
+</body>
+
+</html>
