@@ -54,20 +54,22 @@
                     </div>
 
                     <div th:if="${reserva != null}" class="border-top pt-4">
+                        <div th:if="${mensajeGuardado != null}" class="alert alert-success mt-3 small text-center" th:text="${mensajeGuardado}"></div>
+
                         <div class="row">
 
                             <div class="col-md-4 mb-4">
                                 <div class="bg-white p-3 rounded border">
                                     <h5 class="fw-bold text-success mb-3">Reserva Activa</h5>
                                     <p class="mb-1 small text-muted text-uppercase fw-bold">Cliente</p>
-                                    <p class="mb-3 fw-bold" th:text="${reserva.nombreCliente}"></p>
+                                    <p class="mb-3 fw-bold" th:text="${session.usuario.nombre}"></p>
 
                                     <p class="mb-1 small text-muted text-uppercase fw-bold">Fecha y Hora</p>
                                     <p class="mb-3" th:text="${reserva.fecha} + ' a las ' + ${reserva.hora}"></p>
 
                                     <p class="mb-1 small text-muted text-uppercase fw-bold">Mesa Asignada</p>
                                     <p class="mb-3">Mesa N° <span class="fw-bold"
-                                            th:text="${reserva.mesaAsignada.numero}"></span></p>
+                                            th:text="${reserva.mesa.numero}"></span></p>
 
                                     <p class="mb-1 small text-muted text-uppercase fw-bold">Código de Gestión</p>
                                     <p class="mb-4"><span class="badge bg-dark fs-6"
@@ -118,35 +120,46 @@
                                                 <span class="fw-bold small" th:text="${p.nombre}"></span><br>
                                                 <small class="text-muted" th:text="'S/ ' + ${p.precio}"></small>
                                             </div>
-                                            <form th:action="@{/reservar/agregarPlato}" method="post" class="m-0">
-                                                <input type="hidden" name="idReserva" th:value="${reserva.idReserva}">
-                                                <input type="hidden" name="idPlato" th:value="${p.id_plato}">
-                                                <button type="submit" class="btn btn-sm btn-warning shadow-sm">+
-                                                    Añadir</button>
-                                            </form>
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-warning shadow-sm btn-add-memoria"
+                                                    th:attr="data-id=${p.id_plato}, data-nombre=${p.nombre}, data-precio='S/ ' + ${p.precio}">
+                                                + Añadir
+                                            </button>
                                         </li>
                                     </ul>
                                 </div>
 
                                 <h6 class="fw-bold text-muted mb-3 border-bottom pb-2">Tu Pedido Pre-ordenado:</h6>
 
-                                <div th:if="${#lists.isEmpty(reserva.platosPedidos)}"
-                                    class="alert alert-light border small text-center text-muted">
+                                <div th:if="${#lists.isEmpty(reserva.platos)}"
+                                     class="alert alert-light border small text-center text-muted">
                                     Aún no has añadido nada a tu pedido. Usa el buscador o mira la carta.
                                 </div>
 
-                                <ul th:if="${!#lists.isEmpty(reserva.platosPedidos)}"
-                                    class="list-group list-group-flush mb-3">
-                                    <li th:each="pedido : ${reserva.platosPedidos}"
-                                        class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
+                                <ul id="pedidoList" class="list-group list-group-flush mb-3">
+
+                                    <li th:each="pedido : ${reserva.platos}"
+                                        class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent"
+                                        th:attr="data-id=${pedido.id_plato}">
                                         <div>
                                             <span class="fw-bold text-dark" th:text="${pedido.nombre}"></span><br>
                                             <small class="text-muted" th:text="'S/ ' + ${pedido.precio}"></small>
                                         </div>
-                                        <a th:href="@{/reservar/eliminarPlato/{idRes}/{idPl}(idRes=${reserva.idReserva}, idPl=${pedido.id_plato})}"
-                                            class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3">Quitar</a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3 btn-remove">Quitar</button>
                                     </li>
+
                                 </ul>
+
+                                <!-- Form oculto para enviar los cambios al servidor -->
+                                <form id="formGuardar" th:action="@{/reservar/actualizarPlatos}" method="post" style="display:none;">
+                                    <input type="hidden" name="idReserva" th:value="${reserva.idReserva}" />
+                                    <!-- inputs de platosIds serán añadidos dinámicamente -->
+                                </form>
+
+                                <div class="d-flex justify-content-end">
+                                    <button id="guardarCambios" type="button" class="btn btn-warning fw-bold">Guardar cambios</button>
+                                </div>
                             </div>
 
                         </div>
@@ -163,6 +176,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Persistencia del ID de Reserva ---
             const inputId = document.querySelector('input[name="id"]');
             const idBadge = document.querySelector('.badge.bg-dark');
 
@@ -175,6 +189,81 @@
                 if (idMemoria) {
                     inputId.value = idMemoria;
                 }
+            }
+
+            // --- Gestión del Pedido en Memoria Viva ---
+            const pedidoList = document.getElementById('pedidoList');
+
+            // Escucha global de clics para soportar elementos dinámicos o estáticos
+            document.addEventListener('click', (e) => {
+
+                // 1. LÓGICA PARA AÑADIR PLATO
+                if (e.target && e.target.classList.contains('btn-add-memoria')) {
+                    const boton = e.target;
+                    const idPlato = boton.getAttribute('data-id');
+                    const nombre = boton.getAttribute('data-nombre');
+                    const precio = boton.getAttribute('data-precio');
+
+                    if (!idPlato) return;
+
+                    // CONTROL DE DUPLICADOS: Verificar si el ID ya existe en el pedido temporal
+                    const platoDuplicado = pedidoList.querySelector(`[data-id="${idPlato}"]`);
+                    if (platoDuplicado) {
+                        alert(`El plato "${nombre}" ya ha sido agregado a tu pedido.`);
+                        return; // Detiene la inserción
+                    }
+
+                    // Crear el nuevo nodo visual para el pedido del cliente
+                    const nuevoItem = document.createElement('li');
+                    nuevoItem.className = 'list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent';
+                    nuevoItem.setAttribute('data-id', idPlato);
+                    nuevoItem.innerHTML = `
+                    <div>
+                        <span class="fw-bold text-dark">${nombre}</span><br>
+                        <small class="text-muted">${precio}</small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3 btn-remove">Quitar</button>
+                `;
+
+                    pedidoList.appendChild(nuevoItem);
+                }
+
+                // 2. LÓGICA PARA QUITAR PLATO (Aplica a los cargados inicialmente y a los nuevos)
+                if (e.target && e.target.classList.contains('btn-remove')) {
+                    const elementoLista = e.target.closest('li');
+                    if (elementoLista) {
+                        elementoLista.remove();
+                    }
+                }
+            });
+
+            // --- ENVÍO FINAL AL ENDPOINT /actualizarPlatos ---
+            const guardarBtn = document.getElementById('guardarCambios');
+            if (guardarBtn) {
+                guardarBtn.addEventListener('click', () => {
+                    const form = document.getElementById('formGuardar');
+                    if (!form) return;
+
+                    // Limpiar cualquier input oculto residual generado en clicks previos
+                    Array.from(form.querySelectorAll('input[name="platosIds"]')).forEach(i => i.remove());
+
+                    // Mapear lo que el usuario dejó configurado en el DOM y generar los inputs ocultos
+                    if (pedidoList) {
+                        pedidoList.querySelectorAll('li').forEach(li => {
+                            const id = li.getAttribute('data-id');
+                            if (id) {
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'platosIds';
+                                input.value = id;
+                                form.appendChild(input);
+                            }
+                        });
+                    }
+
+                    // Envío formal vía POST al controlador de Spring
+                    form.submit();
+                });
             }
         });
     </script>

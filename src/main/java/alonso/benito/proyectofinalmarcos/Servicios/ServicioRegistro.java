@@ -1,43 +1,36 @@
 package alonso.benito.proyectofinalmarcos.Servicios;
 
-import alonso.benito.proyectofinalmarcos.Modelos.Resena;
 import alonso.benito.proyectofinalmarcos.Modelos.Usuario;
-import alonso.benito.proyectofinalmarcos.Repositorios.IBasicRepository;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
+import alonso.benito.proyectofinalmarcos.Repositorios.UsuarioRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 
 @Service
 public class ServicioRegistro {
 
-    private final IBasicRepository<Usuario, String> usuarioRepo;
-    private int nuevoId = 10; //ID autoincremental, cambiar luego
-    ServicioRegistro(@Qualifier("usuarioRepoPrueba") IBasicRepository<Usuario, String> usuarioRepo) {
+    private final UsuarioRepository usuarioRepo;
+
+    public ServicioRegistro(UsuarioRepository usuarioRepo) {
         this.usuarioRepo = usuarioRepo;
     }
-
-    public boolean registrarUsuario(String nombre, String email, String password) {
-        boolean emailValido = validarFormatoEmail(email);
+    public boolean registrarUsuario(Usuario usuario) {
+        boolean emailValido = validarFormatoEmail(usuario.getEmail());
         if (!emailValido) {
             return false; // Formato de email no válido
         }
-        Usuario usuarioExistente = buscarUsuarioPorEmail(email);
+        Usuario usuarioExistente = usuarioRepo.findByEmail(usuario.getEmail());
         if (usuarioExistente != null) {
             return false; // El email ya está registrado
         }
-        Usuario nuevoUsuario = new Usuario(nuevoId++, nombre, email, password,new ArrayList<>(),new ArrayList<>());
-        usuarioRepo.save(nuevoUsuario);
+        usuarioRepo.save(usuario);
         return true; // Registro exitoso
     }
 
     public Usuario loginUsuario(String email, String password) {
-        Usuario usuario = buscarUsuarioPorEmail(email);
+        Usuario usuario = usuarioRepo.findByEmail(email);
         if(usuario==null) {
             return null; // Usuario no encontrado
         }
-        if (usuario.password().equals(password)) {
+        if (usuario.getPassword().equals(password)) {
             return usuario;
         }
         return null;//Contraseña incorrecta
@@ -46,9 +39,6 @@ public class ServicioRegistro {
     private boolean validarFormatoEmail(String email) {
         return email.contains("@") && email.contains(".");
 
-    }
-    private Usuario buscarUsuarioPorEmail(String email) {
-        return usuarioRepo.findById(email);
     }
 
 }

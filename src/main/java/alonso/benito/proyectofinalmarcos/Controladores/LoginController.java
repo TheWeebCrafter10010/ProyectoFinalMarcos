@@ -31,8 +31,11 @@ public class LoginController {
                                    @RequestParam String email,
                                    @RequestParam String password,
                                    Model model) {
-
-        boolean exito = servicioRegistro.registrarUsuario(nombre, email, password);
+        Usuario usuario = new Usuario();
+        usuario.setNombre(nombre);
+        usuario.setEmail(email);
+        usuario.setPassword(password);
+        boolean exito = servicioRegistro.registrarUsuario(usuario);
 
         if (exito) {
 

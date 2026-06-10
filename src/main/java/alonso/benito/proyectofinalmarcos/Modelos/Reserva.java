@@ -1,52 +1,59 @@
 package alonso.benito.proyectofinalmarcos.Modelos;
 
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Set;
+@Entity
+@Table(name = "reservas")
 public class Reserva {
-    private static int contador = 1000;
 
-    private int idReserva;
-    private String nombreCliente;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_reserva")
+    private Integer idReserva;
+
+    @ManyToOne
+    @JoinColumn(name = "id_usuario")
+    private Usuario usuario;
+
     private String telefono;
-    private String fecha;
-    private String hora;
+
+    private LocalDate fecha;
+
+    private LocalTime hora;
+
+    @Column(name = "cantidad_personas", nullable = false)
     private int cantidadPersonas;
 
-    private List<Plato> platosPedidos;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_mesa")
+    private Mesa mesa;
 
-    private Mesa mesaAsignada;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "reserva_platos",
+            joinColumns = @JoinColumn(name = "id_reserva"),
+            inverseJoinColumns = @JoinColumn(name = "id_plato")
+    )
+    private Set<Plato> platos = new HashSet<>();
 
-    public Reserva() {
-        this.idReserva = ++contador;
-        this.platosPedidos = new ArrayList<>();
-    }
-
-    public Reserva(String nombreCliente, String telefono, String fecha, String hora, int cantidadPersonas) {
-        this.idReserva = ++contador;
-        this.nombreCliente = nombreCliente;
-        this.telefono = telefono;
-        this.fecha = fecha;
-        this.hora = hora;
-        this.cantidadPersonas = cantidadPersonas;
-        this.platosPedidos = new ArrayList<>();
-
-    }
-
-    public int getIdReserva() {
+    public Integer getIdReserva() {
         return idReserva;
     }
 
-    public void setIdReserva(int idReserva) {
+    public void setIdReserva(Integer idReserva) {
         this.idReserva = idReserva;
     }
 
-    public String getNombreCliente() {
-        return nombreCliente;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setNombreCliente(String nombreCliente) {
-        this.nombreCliente = nombreCliente;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public String getTelefono() {
@@ -57,19 +64,19 @@ public class Reserva {
         this.telefono = telefono;
     }
 
-    public String getFecha() {
+    public LocalDate getFecha() {
         return fecha;
     }
 
-    public void setFecha(String fecha) {
+    public void setFecha(LocalDate fecha) {
         this.fecha = fecha;
     }
 
-    public String getHora() {
+    public LocalTime getHora() {
         return hora;
     }
 
-    public void setHora(String hora) {
+    public void setHora(LocalTime hora) {
         this.hora = hora;
     }
 
@@ -81,20 +88,19 @@ public class Reserva {
         this.cantidadPersonas = cantidadPersonas;
     }
 
-    public List<Plato> getPlatosPedidos() {
-        return platosPedidos;
+    public Mesa getMesa() {
+        return mesa;
     }
 
-    public void setPlatosPedidos(List<Plato> platosPedidos) {
-        this.platosPedidos = platosPedidos;
+    public void setMesa(Mesa mesa) {
+        this.mesa = mesa;
     }
 
-    public Mesa getMesaAsignada() {
-        return mesaAsignada;
+    public Set<Plato> getPlatos() {
+        return platos;
     }
 
-    public void setMesaAsignada(Mesa mesaAsignada) {
-        this.mesaAsignada = mesaAsignada;
+    public void setPlatos(Set<Plato> platos) {
+        this.platos = platos;
     }
-
 }
