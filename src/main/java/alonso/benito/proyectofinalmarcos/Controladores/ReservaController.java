@@ -1,5 +1,6 @@
 package alonso.benito.proyectofinalmarcos.Controladores;
 
+import alonso.benito.proyectofinalmarcos.Enums.ReservaMensaje;
 import alonso.benito.proyectofinalmarcos.Modelos.Plato;
 import alonso.benito.proyectofinalmarcos.Modelos.Reserva;
 import alonso.benito.proyectofinalmarcos.Modelos.Usuario;
@@ -8,6 +9,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 @Controller
 @RequestMapping("/reservar")
 public class ReservaController {
@@ -30,15 +32,19 @@ public class ReservaController {
         return "form_reserva";
     }
 
-    //MEJORAR ESTE METODO, esta haciendo mucho
-    //y el http session se esta pasando muchas veces, se podria manejar de otra forma, pero por ahora lo dejo asi
+    // MEJORAR ESTE METODO, esta haciendo mucho
+    // y el http session se esta pasando muchas veces, se podria manejar de otra forma, pero por ahora lo dejo asi
+    // 9/6/2026 metodo mejorado
+
     @PostMapping("/guardar")
     public String guardarReserva(HttpSession session, @ModelAttribute Reserva reserva, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        String resultado = servicioReserva.guardarReserva(usuario,reserva,session);
 
-        if (resultado.equals("ERROR_SIN_MESAS")) {
-            model.addAttribute("errorMesas", "Lo sentimos, no hay mesas disponibles para " + reserva.getCantidadPersonas() + " personas en esa fecha y hora. Por favor, elige otro horario.");
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        reserva.setUsuario(usuario);
+
+        ReservaMensaje resultado = servicioReserva.guardarReserva(reserva);
+        if(resultado == ReservaMensaje.ERROR_SIN_MESAS) {
+            model.addAttribute("errorMesas", resultado.getMensaje());
             return "form_reserva";
         }
 
@@ -77,43 +83,23 @@ public class ReservaController {
         return "gestion_reserva";
     }
 
-    @PostMapping("/agregarPlato")
-    public String agregarPlato(@RequestParam("idReserva") int idReserva, @RequestParam("idPlato") int idPlato, Model model) {
-        Reserva reserva = servicioReserva.buscarPorId(idReserva);
-        Plato plato = servicioReserva.buscarPlatoPorId(idPlato);
 
-        if (reserva != null && plato != null) {
-            reserva.getPlatosPedidos().add(plato);
-        }
-
-        model.addAttribute("reserva", reserva);
+    // Nuevo endpoint para actualizar platos de la reserva desde el cliente
+    @PostMapping("/actualizarPlatos")
+    public String actualizarPlatos(@RequestParam("idReserva") int idReserva,
+                                   @RequestParam(name = "platosIds", required = false) List<Integer> platosIds,
+                                   Model model) {
+        Reserva actualizada = servicioReserva.actualizarPlatosReserva(idReserva, platosIds);
+        model.addAttribute("reserva", actualizada);
         model.addAttribute("carta", servicioReserva.obtenerCarta());
         model.addAttribute("tituloCarta", "Carta Completa:");
-        return "gestion_reserva";
-    }
-
-    @GetMapping("/eliminarPlato/{idReserva}/{idPlato}")
-    public String eliminarPlato(@PathVariable int idReserva, @PathVariable int idPlato, Model model) {
-        Reserva reserva = servicioReserva.buscarPorId(idReserva);
-        if (reserva != null) {
-            Plato platoAEliminar = reserva.getPlatosPedidos().stream()
-                    .filter(p -> p.id_plato() == idPlato)
-                    .findFirst().orElse(null);
-            if (platoAEliminar != null) {
-                reserva.getPlatosPedidos().remove(platoAEliminar);
-            }
-        }
-
-        model.addAttribute("reserva", reserva);
-        model.addAttribute("carta", servicioReserva.obtenerCarta());
-        model.addAttribute("tituloCarta", "Carta Completa:");
+        model.addAttribute("mensajeGuardado", "Cambios guardados correctamente.");
         return "gestion_reserva";
     }
 
     @GetMapping("/eliminar/{id}")
     public String eliminarReserva(HttpSession session, @PathVariable int id, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-        usuario.reservas().removeIf(reserva -> reserva.getIdReserva() == id);
+
         servicioReserva.cancelarReserva(id);
         model.addAttribute("mensajeCancelacion", "Tu reserva ha sido cancelada exitosamente.");
         return "gestion_reserva";

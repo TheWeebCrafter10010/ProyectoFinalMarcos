@@ -153,12 +153,12 @@
             <td th:text="${reserva.fecha + ' - ' + reserva.hora}">00/00/0000</td>
             <td>
                 <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li th:each="plato : ${reserva.platosPedidos}" th:text="${plato.nombre}">Plato</li>
-                    <li th:if="${#lists.isEmpty(reserva.platosPedidos)}" class="text-muted small">Sin platos pedidos</li>
+                    <li th:each="plato : ${reserva.platos}" th:text="${plato.nombre}">Plato</li>
+                    <li th:if="${#lists.isEmpty(reserva.platos)}" class="text-muted small">Sin platos pedidos</li>
                 </ul>
             </td>
             <td th:text="${reserva.cantidadPersonas}">0</td>
-            <td th:text="${reserva.mesaAsignada != null ? 'Mesa ' + reserva.mesaAsignada.idMesa : 'Pendiente'}">Mesa</td>
+            <td th:text="${reserva.mesa != null ? 'Mesa ' + reserva.mesa.idMesa : 'Pendiente'}">Mesa</td>
         </tr>
         </tbody>
     </table>
