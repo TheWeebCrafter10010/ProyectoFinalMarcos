@@ -1,0 +1,113 @@
+<div th:fragment="asistente">
+
+    <div id="chat-button" class="position-fixed bottom-0 end-0 m-4 btn btn-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; cursor: pointer; z-index: 1050; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: none;">
+        <span style="font-size: 1.6rem; color: #212529;">💬</span>
+    </div>
+
+    <div id="chat-window" class="position-fixed bottom-0 end-0 m-4 card d-none" style="width: 350px; height: 450px; z-index: 1050; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: all 0.3s ease; border: 1px solid #ffc107;">
+
+        <div class="card-header bg-warning d-flex justify-content-between align-items-center" style="border-bottom: 1px solid #e0a800;">
+            <h5 class="m-0 fs-6" style="color: #212529; font-weight: 600;">🤖 Asistente Sabor y Tradición</h5>
+            <button type="button" id="close-chat" class="btn-close" aria-label="Close" style="filter: brightness(0.1);"></button>
+        </div>
+
+        <div id="chat-body" class="card-body overflow-auto" style="height: 320px; background-color: #fafafa;">
+            <div class="d-flex mb-3">
+                <div class="bg-white p-2 rounded shadow-sm text-secondary" style="max-width: 80%; font-size: 0.9rem; border: 1px solid #f0f0f0;">
+                    ¡Hola! Soy el asistente virtual de <strong>Sabor y Tradición</strong>. ¿En qué puedo ayudarte?
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer bg-white border-top-0">
+            <form id="chat-form" class="input-group">
+                <input type="text" id="chat-input" class="form-control" placeholder="Escribe tu mensaje..." required autocomplete="off" style="border-color: #ffc107; box-shadow: none;">
+                <!-- Botón de enviar (Amarillo con texto oscuro) -->
+                <button class="btn btn-warning" type="submit" style="color: #212529; font-weight: 500; border-color: #ffc107;">Enviar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const chatButton = document.getElementById("chat-button");
+            const chatWindow = document.getElementById("chat-window");
+            const closeChat = document.getElementById("close-chat");
+            const chatForm = document.getElementById("chat-form");
+            const chatInput = document.getElementById("chat-input");
+            const chatBody = document.getElementById("chat-body");
+
+            chatButton.addEventListener("click", () => {
+                chatWindow.classList.toggle("d-none");
+                chatInput.focus();
+            });
+
+            closeChat.addEventListener("click", () => {
+                chatWindow.classList.add("d-none");
+            });
+
+            chatForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const mensaje = chatInput.value.trim();
+                if (!mensaje) return;
+
+                agregarMensaje(mensaje, 'usuario');
+                chatInput.value = "";
+                const indicadorCarga = mostrarIndicadorEscribiendo();
+
+                fetch('/api/chatbot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensaje: mensaje })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        indicadorCarga.remove();
+                        agregarMensaje(data.respuesta, 'bot');
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        indicadorCarga.remove();
+                        agregarMensaje("Tuvimos un problema al conectar con el servidor.", 'bot');
+                    });
+            });
+
+            function agregarMensaje(texto, remitente) {
+                const contenedor = document.createElement("div");
+                contenedor.className = `d-flex mb-3 ${remitente === 'usuario' ? 'justify-content-end' : 'justify-content-start'}`;
+
+                const burbuja = document.createElement("div");
+
+                if (remitente === 'usuario') {
+                    burbuja.className = "p-2 rounded shadow-sm text-dark";
+                    burbuja.style.backgroundColor = "#fff3cd";
+                    burbuja.style.border = "1px solid #ffeeba";
+                } else {
+                    burbuja.className = "p-2 rounded shadow-sm bg-white text-secondary";
+                    burbuja.style.border = "1px solid #f0f0f0";
+                }
+
+                burbuja.style.maxWidth = "80%";
+                burbuja.style.fontSize = "0.9rem";
+                burbuja.innerHTML = texto;
+                contenedor.appendChild(burbuja);
+                chatBody.appendChild(contenedor);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+
+            function mostrarIndicadorEscribiendo() {
+                const contenedor = document.createElement("div");
+                contenedor.className = "d-flex mb-3 justify-content-start";
+                const burbuja = document.createElement("div");
+                burbuja.className = "bg-white p-2 rounded shadow-sm text-muted";
+                burbuja.style.fontSize = "0.85rem";
+                burbuja.style.border = "1px solid #f0f0f0";
+                burbuja.innerHTML = "<em>Sabor y Tradición está escribiendo...</em>";
+                contenedor.appendChild(burbuja);
+                chatBody.appendChild(contenedor);
+                chatBody.scrollTop = chatBody.scrollHeight;
+                return contenedor;
+            }
+        });
+    </script>
+</div>

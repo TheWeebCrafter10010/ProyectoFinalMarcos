@@ -2,6 +2,7 @@ package alonso.benito.proyectofinalmarcos.Servicios;
 
 import alonso.benito.proyectofinalmarcos.Modelos.Usuario;
 import alonso.benito.proyectofinalmarcos.Repositorios.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -9,9 +10,15 @@ public class ServicioRegistro {
 
     private final UsuarioRepository usuarioRepo;
 
-    public ServicioRegistro(UsuarioRepository usuarioRepo) {
+    private final ServicioEmail servicioEmail;
+
+
+
+    public ServicioRegistro(UsuarioRepository usuarioRepo,ServicioEmail servicioEmail) {
         this.usuarioRepo = usuarioRepo;
+        this.servicioEmail = servicioEmail;
     }
+
     public boolean registrarUsuario(Usuario usuario) {
         boolean emailValido = validarFormatoEmail(usuario.getEmail());
         if (!emailValido) {
@@ -22,6 +29,11 @@ public class ServicioRegistro {
             return false; // El email ya está registrado
         }
         usuarioRepo.save(usuario);
+
+        String asunto = "Bienvenido a Sabor y Tradición";
+        String cuerpo = String.format(servicioEmail.getBienvenidaCorreo(), usuario.getNombre());
+        servicioEmail.enviarEmail(usuario.getEmail(), asunto, cuerpo);
+
         return true; // Registro exitoso
     }
 

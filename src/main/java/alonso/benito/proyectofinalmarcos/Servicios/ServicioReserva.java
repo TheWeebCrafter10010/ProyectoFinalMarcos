@@ -31,6 +31,9 @@ public class ServicioReserva {
     @Autowired
     ReservaRepository reservaRepo;
 
+    @Autowired
+    ServicioEmail servicioEmail;
+
     public ReservaMensaje guardarReserva(Reserva reserva) {
         //se puede mejorar para dar diferentes mensajes
         //de momento esta asi
@@ -43,6 +46,10 @@ public class ServicioReserva {
             mesaRepo.save(mesaDisponible);
             reserva.setMesa(mesaDisponible);
             reservaRepo.save(reserva);
+
+            String asunto = "Confirmación de tu reserva - Sabor y Tradición";
+            String cuerpo = servicioEmail.getConfirmacionReservaCorreo(reserva);
+            servicioEmail.enviarEmail(reserva.getUsuario().getEmail(), asunto, cuerpo);
         }else {
             return ReservaMensaje.ERROR_SIN_MESAS;
         }
@@ -84,7 +91,7 @@ public class ServicioReserva {
         return  platoRepo.findById(idPlato).orElse(null);
     }
 
-    // Nuevo método actualiza los platos asociados a una reserva y guarda los cambios
+    // Nuevo metodo actualiza los platos asociados a una reserva y guarda los cambios
     public Reserva actualizarPlatosReserva(int idReserva, List<Integer> platosIds) {
         var posible = reservaRepo.findById(idReserva);
         if (posible.isEmpty()) return null;
