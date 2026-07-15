@@ -5,12 +5,8 @@ import alonso.benito.proyectofinalmarcos.Enums.ReservaMensaje;
 import alonso.benito.proyectofinalmarcos.Modelos.Mesa;
 import alonso.benito.proyectofinalmarcos.Modelos.Plato;
 import alonso.benito.proyectofinalmarcos.Modelos.Reserva;
-import alonso.benito.proyectofinalmarcos.Modelos.Usuario;
 import alonso.benito.proyectofinalmarcos.Repositorios.*;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.BeanRegistrarDslMarker;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

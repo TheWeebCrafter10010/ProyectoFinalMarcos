@@ -67,15 +67,13 @@ public class ServicioChatbot {
 
             String respuesta = chatModel.call(prompt).getResult().getOutput().getText();
             respuestaJson.put("respuesta", respuesta);
+            return respuestaJson;
 
         }catch (Exception e){
             e.printStackTrace();
             respuestaJson.put("respuesta", "Lo siento, ha ocurrido un error al procesar tu mensaje. Por favor, inténtalo de nuevo más tarde.");
             return respuestaJson;
         }
-
-        respuestaJson.put("respuesta", "Hola!");
-        return respuestaJson;
 
     }
 
