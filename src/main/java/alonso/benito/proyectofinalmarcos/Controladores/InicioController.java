@@ -18,7 +18,9 @@ public class InicioController {
     }
 
     @GetMapping("/")
-    public String redirigirInicio() {
+    public String redirigirInicio(Model modelo) {
+        modelo.addAttribute("platos", servicioPaginaInicio.obtenerTodosPlatos());
+        modelo.addAttribute("resenas", servicioPaginaInicio.obtenerResenasDestacados());
         return "redirect:/index";
     }
 
