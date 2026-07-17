@@ -14,7 +14,8 @@ public class Usuario {
     private String nombre;
     private String email;
     private String password;
-    private String rol;
+    @Column(nullable = false)
+    private String rol = "USER";
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Resena> resenas;
 
