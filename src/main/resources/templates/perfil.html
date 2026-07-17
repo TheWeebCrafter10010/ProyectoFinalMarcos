@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Perfil de Usuario - Sabor y Tradición</title>
@@ -115,10 +115,40 @@
     <p><strong>Correo:</strong> <span th:text="${usuario.email}">correo@ejemplo.com</span></p>
     <p><strong>ID Cliente:</strong> <span th:text="${'#' + usuario.id_usuario}">#000</span></p>
 
-    <a th:href="@{/perfil/cerrar}" class="btn-logout">Cerrar Sesión</a>
+    <div sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/admin/dashboard}"
+           style="background-color: #28a745; color: white; text-decoration: none; padding: 0.7rem 1.2rem; border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 1rem;">
+            Ir al Panel de Administración
+        </a>
+    </div>
+
+    <form th:action="@{/usuarios/logout}" method="post">
+        <button type="submit" class="btn-logout" style="border:0; cursor:pointer;">Cerrar Sesión</button>
+    </form>
 </section>
 
-<section id="reseñas">
+<section id="resenas">
+    <h2>Escribir una reseña</h2>
+    <div th:if="${mensajeResena}" style="padding:12px; background:#d1e7dd; border-radius:6px; margin-bottom:12px;" th:text="${mensajeResena}"></div>
+    <div th:if="${errorResena}" style="padding:12px; background:#f8d7da; border-radius:6px; margin-bottom:12px;" th:text="${errorResena}"></div>
+    <form th:action="@{/resenas/guardar}" method="post">
+        <label for="calificacion"><strong>Calificación</strong></label>
+        <select id="calificacion" name="calificacion" required style="width:100%; padding:10px; margin:8px 0 14px;">
+            <option value="5">5 - Excelente</option>
+            <option value="4">4 - Muy bueno</option>
+            <option value="3">3 - Bueno</option>
+            <option value="2">2 - Regular</option>
+            <option value="1">1 - Malo</option>
+        </select>
+        <label for="comentario"><strong>Comentario</strong></label>
+        <textarea id="comentario" name="comentario" rows="4" minlength="5" maxlength="500" required
+                  style="width:100%; padding:10px; margin:8px 0 14px; box-sizing:border-box;"
+                  placeholder="Cuéntanos cómo fue tu experiencia"></textarea>
+        <button type="submit" style="background:#d9534f; color:white; border:0; padding:11px 20px; border-radius:5px; font-weight:bold;">Publicar reseña</button>
+    </form>
+</section>
+
+<section id="mis-resenas">
     <h2>Mis Reseñas</h2>
     <div th:if="${#lists.isEmpty(usuario.resenas)}">
         <p class="text-muted">Aún no has escrito ninguna reseña.</p>
@@ -160,9 +190,12 @@
             <td th:text="${reserva.cantidadPersonas}">0</td>
             <td th:text="${reserva.mesa != null ? 'Mesa ' + reserva.mesa.idMesa : 'Pendiente'}">Mesa</td>
         </tr>
+        <a th:href="@{/reservar/gestion}" class="btn btn-outline-light btn-sm rounded-pill mt-2">Gestionar
+            Mi Reserva</a>
         </tbody>
     </table>
 </section>
 
 </body>
 </html>
+

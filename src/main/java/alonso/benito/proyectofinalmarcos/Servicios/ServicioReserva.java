@@ -30,6 +30,7 @@ public class ServicioReserva {
     @Autowired
     ServicioEmail servicioEmail;
 
+    @Transactional
     public ReservaMensaje guardarReserva(Reserva reserva) {
         //se puede mejorar para dar diferentes mensajes
         //de momento esta asi
@@ -60,20 +61,28 @@ public class ServicioReserva {
         return reservaRepo.findById(id).orElse(null);
     }
     @Transactional
-    public void cancelarReserva(int id) {
+    public boolean cancelarReserva(int id,boolean isAdmin) {
         var reservaOpt = reservaRepo.findById(id).orElse(null);
-        if (reservaOpt==null) return;
+        if (reservaOpt==null) return false;
+
+        var email = reservaOpt.getUsuario().getEmail();
+        String mensaje = servicioEmail.getMensajeCancelacionReserva(reservaOpt,isAdmin);
 
         if (reservaOpt.getUsuario() != null) {
             reservaOpt.getUsuario().getReservas().remove(reservaOpt);
         }
+        if (reservaOpt.getMesa() != null) {
+            reservaOpt.getMesa().setEstado(EstadoMesa.DISPONIBLE);
+            mesaRepo.save(reservaOpt.getMesa());
+        }
 
-
-        reservaOpt.getMesa().setEstado(EstadoMesa.DISPONIBLE);
-        mesaRepo.save(reservaOpt.getMesa());
         reservaOpt.setMesa(null);
 
         reservaRepo.delete(reservaOpt);
+
+        servicioEmail.enviarEmail(email,"Cancelación de tu reserva - Sabor y Tradición", mensaje);
+
+        return true;
     }
 
     public List<Plato> obtenerCarta() {
@@ -88,11 +97,11 @@ public class ServicioReserva {
     }
 
     // Nuevo metodo actualiza los platos asociados a una reserva y guarda los cambios
-    public Reserva actualizarPlatosReserva(int idReserva, List<Integer> platosIds) {
-        var posible = reservaRepo.findById(idReserva);
-        if (posible.isEmpty()) return null;
-        Reserva reserva = posible.get();
-        // limpiar platos actuales
+    @Transactional
+    public Reserva actualizarPlatosReserva(int idReserva, List<Integer> platosIds, String email) {
+        Reserva reserva = buscarReservaDelUsuario(idReserva, email);
+        if (reserva == null) return null;
+
         reserva.getPlatos().clear();
         if (platosIds != null) {
             for (Integer idPlato : platosIds) {
@@ -100,5 +109,13 @@ public class ServicioReserva {
             }
         }
         return reservaRepo.save(reserva);
+    }
+
+    public Reserva buscarReservaDelUsuario(int id, String email) {
+        Reserva reserva = reservaRepo.findById(id).orElse(null);
+        if (reserva == null || reserva.getUsuario() == null || !reserva.getUsuario().getEmail().equalsIgnoreCase(email)) {
+            return null;
+        }
+        return reserva;
     }
 }

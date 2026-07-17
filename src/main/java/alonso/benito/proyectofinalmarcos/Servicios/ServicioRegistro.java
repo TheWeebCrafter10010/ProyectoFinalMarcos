@@ -3,6 +3,7 @@ package alonso.benito.proyectofinalmarcos.Servicios;
 import alonso.benito.proyectofinalmarcos.Modelos.Usuario;
 import alonso.benito.proyectofinalmarcos.Repositorios.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,11 +13,13 @@ public class ServicioRegistro {
 
     private final ServicioEmail servicioEmail;
 
+    private final PasswordEncoder passwordEncoder;
 
 
-    public ServicioRegistro(UsuarioRepository usuarioRepo,ServicioEmail servicioEmail) {
+    public ServicioRegistro(UsuarioRepository usuarioRepo,ServicioEmail servicioEmail,PasswordEncoder passwordEncoder) {
         this.usuarioRepo = usuarioRepo;
         this.servicioEmail = servicioEmail;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public boolean registrarUsuario(Usuario usuario) {
@@ -28,6 +31,7 @@ public class ServicioRegistro {
         if (usuarioExistente != null) {
             return false; // El email ya está registrado
         }
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         usuarioRepo.save(usuario);
 
         String asunto = "Bienvenido a Sabor y Tradición";
@@ -49,8 +53,7 @@ public class ServicioRegistro {
     }
 
     private boolean validarFormatoEmail(String email) {
-        return email.contains("@") && email.contains(".");
-
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     }
 
 }

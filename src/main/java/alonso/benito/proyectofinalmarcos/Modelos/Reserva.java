@@ -28,7 +28,7 @@ public class Reserva {
     @Column(name = "cantidad_personas", nullable = false)
     private int cantidadPersonas;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_mesa")
     private Mesa mesa;
 

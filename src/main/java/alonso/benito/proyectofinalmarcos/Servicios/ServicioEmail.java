@@ -53,6 +53,28 @@ public class ServicioEmail {
     Atentamente,
     El equipo de Sabor y Tradición.
     """;
+
+    private final String cancelacionReservaAdmin = """
+        Lamentamos informarte que tu reserva ha sido cancelada. 😔
+        
+        Detalles de la reserva:
+        - Fecha: %s
+        - Hora: %s
+        - Mesa: %s
+        
+        Si tienes alguna pregunta, no dudes en contactarnos.
+        """;
+    private final String cancelacionReservaUsuario = """
+        Hola, hemos recibido tu solicitud y confirmamos que tu reserva ha sido cancelada correctamente. ✅
+        
+        Estos son los detalles de la reserva que se eliminó:
+        - Fecha: %s
+        - Hora: %s
+        - Mesa: %s
+        
+        Lamentamos que no puedas acompañarnos en esta ocasión, ¡esperamos verte pronto en Sabor y Tradición!
+    """;
+
     @Async
     public void enviarEmail(String destinatario, String asunto, String cuerpo) {
         try {
@@ -82,6 +104,23 @@ public class ServicioEmail {
         String cuerpo = String.format(
                 confirmacionReservaCorreo,
                 reserva.getUsuario().getNombre(),
+                fechaFormateada,
+                horaFormateada,
+                reserva.getMesa().getIdMesa()
+        );
+        return cuerpo;
+    }
+
+    public String getMensajeCancelacionReserva(Reserva reserva, boolean isAdmin) {
+        DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy", new Locale("es", "ES"));
+        String fechaFormateada = reserva.getFecha().format(formatoFecha);
+
+        DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
+        String horaFormateada = reserva.getHora().format(formatoHora);
+
+        String mensajeCancelacion = isAdmin ? cancelacionReservaAdmin : cancelacionReservaUsuario;
+        String cuerpo = String.format(
+                mensajeCancelacion,
                 fechaFormateada,
                 horaFormateada,
                 reserva.getMesa().getIdMesa()

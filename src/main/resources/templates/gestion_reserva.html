@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Gestionar Mi Reserva | Sabor y Tradición</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <style>
         .border-bottom-dashed {
             border-bottom: 1px dashed #dee2e6;
@@ -24,200 +24,209 @@
 
 <body class="bg-light">
 
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
 
-                <div class="card border-0 shadow-sm p-4">
-                    <h3 class="fw-bold mb-4 text-center">Gestionar Mi Reserva</h3>
+            <div class="card border-0 shadow-sm p-4">
+                <h3 class="fw-bold mb-4 text-center">Gestionar Mi Reserva</h3>
 
-                    <div th:if="${mensajeCancelacion != null}"
-                        class="alert alert-success fw-bold text-center py-3 shadow-sm">
-                        <span th:text="${mensajeCancelacion}"></span>
-                    </div>
-
-                    <div th:if="${reserva == null and mensajeCancelacion == null}">
-                        <p class="text-muted text-center mb-4">Ingresa tu código de reserva para pre-ordenar platos o
-                            cancelar tu mesa.</p>
-                        <div class="row justify-content-center">
-                            <div class="col-md-6">
-                                <form th:action="@{/reservar/consultar}" method="post" class="input-group shadow-sm">
-                                    <input type="number" name="id" class="form-control border-dark"
-                                        placeholder="ID de Reserva (Ej. 1001)" required>
-                                    <button class="btn btn-dark px-4 fw-bold" type="submit">BUSCAR</button>
-                                </form>
-                                <div th:if="${busquedaRealizada != null}" class="alert alert-danger mt-3 small">
-                                    No se encontró ninguna reserva con ese ID. Por favor, verifica el número.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div th:if="${reserva != null}" class="border-top pt-4">
-                        <div th:if="${mensajeGuardado != null}" class="alert alert-success mt-3 small text-center" th:text="${mensajeGuardado}"></div>
-
-                        <div class="row">
-
-                            <div class="col-md-4 mb-4">
-                                <div class="bg-white p-3 rounded border">
-                                    <h5 class="fw-bold text-success mb-3">Reserva Activa</h5>
-                                    <p class="mb-1 small text-muted text-uppercase fw-bold">Cliente</p>
-                                    <p class="mb-3 fw-bold" th:text="${session.usuario.nombre}"></p>
-
-                                    <p class="mb-1 small text-muted text-uppercase fw-bold">Fecha y Hora</p>
-                                    <p class="mb-3" th:text="${reserva.fecha} + ' a las ' + ${reserva.hora}"></p>
-
-                                    <p class="mb-1 small text-muted text-uppercase fw-bold">Mesa Asignada</p>
-                                    <p class="mb-3">Mesa N° <span class="fw-bold"
-                                            th:text="${reserva.mesa.numero}"></span></p>
-
-                                    <p class="mb-1 small text-muted text-uppercase fw-bold">Código de Gestión</p>
-                                    <p class="mb-4"><span class="badge bg-dark fs-6"
-                                            th:text="${reserva.idReserva}"></span></p>
-
-                                    <a th:href="@{/reservar/eliminar/{id}(id=${reserva.idReserva})}"
-                                        class="btn btn-outline-danger w-100 fw-bold"
-                                        onclick="return confirm('¿Estás seguro de que deseas cancelar tu reserva por completo?')">
-                                        CANCELAR TODA LA RESERVA
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class="col-md-8 border-start ps-md-4">
-                                <h5 class="fw-bold mb-4">Añadir platos o experiencias al pedido</h5>
-
-                                <div class="d-flex justify-content-between mb-3 align-items-start gap-2">
-                                    <form th:action="@{/reservar/buscarPlato}" method="post" class="flex-grow-1">
-                                        <input type="hidden" name="idReserva" th:value="${reserva.idReserva}">
-                                        <div class="input-group input-group-sm">
-                                            <input type="text" name="termino" class="form-control border-secondary"
-                                                placeholder="Buscar plato... Ej. Ceviche" required>
-                                            <button class="btn btn-dark fw-bold" type="submit">BUSCAR</button>
-                                        </div>
-                                    </form>
-
-                                    <form th:action="@{/reservar/listarCarta}" method="post">
-                                        <input type="hidden" name="idReserva" th:value="${reserva.idReserva}">
-                                        <button class="btn btn-sm btn-outline-dark fw-bold" type="submit"
-                                            style="white-space: nowrap;">Ver Toda la Carta</button>
-                                    </form>
-                                </div>
-
-                                <div th:if="${carta != null}"
-                                    class="mb-4 p-3 bg-white border border-warning rounded shadow-sm">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="fw-bold text-warning m-0" th:text="${tituloCarta}"></h6>
-                                        <form th:action="@{/reservar/consultar}" method="post" class="m-0">
-                                            <input type="hidden" name="id" th:value="${reserva.idReserva}">
-                                            <button type="submit" class="btn-close" style="font-size: 0.7rem;"></button>
-                                        </form>
-                                    </div>
-
-                                    <ul class="list-group list-group-flush">
-                                        <li th:each="p : ${carta}"
-                                            class="list-group-item d-flex justify-content-between align-items-center px-0 border-bottom-dashed py-2">
-                                            <div class="pe-3">
-                                                <span class="fw-bold small" th:text="${p.nombre}"></span><br>
-                                                <small class="text-muted" th:text="'S/ ' + ${p.precio}"></small>
-                                            </div>
-
-                                            <button type="button"
-                                                    class="btn btn-sm btn-warning shadow-sm btn-add-memoria"
-                                                    th:attr="data-id=${p.id_plato}, data-nombre=${p.nombre}, data-precio='S/ ' + ${p.precio}">
-                                                + Añadir
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <h6 class="fw-bold text-muted mb-3 border-bottom pb-2">Tu Pedido Pre-ordenado:</h6>
-
-                                <div th:if="${#lists.isEmpty(reserva.platos)}"
-                                     class="alert alert-light border small text-center text-muted">
-                                    Aún no has añadido nada a tu pedido. Usa el buscador o mira la carta.
-                                </div>
-
-                                <ul id="pedidoList" class="list-group list-group-flush mb-3">
-
-                                    <li th:each="pedido : ${reserva.platos}"
-                                        class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent"
-                                        th:attr="data-id=${pedido.id_plato}">
-                                        <div>
-                                            <span class="fw-bold text-dark" th:text="${pedido.nombre}"></span><br>
-                                            <small class="text-muted" th:text="'S/ ' + ${pedido.precio}"></small>
-                                        </div>
-                                        <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3 btn-remove">Quitar</button>
-                                    </li>
-
-                                </ul>
-
-                                <!-- Form oculto para enviar los cambios al servidor -->
-                                <form id="formGuardar" th:action="@{/reservar/actualizarPlatos}" method="post" style="display:none;">
-                                    <input type="hidden" name="idReserva" th:value="${reserva.idReserva}" />
-                                    <!-- inputs de platosIds serán añadidos dinámicamente -->
-                                </form>
-
-                                <div class="d-flex justify-content-end">
-                                    <button id="guardarCambios" type="button" class="btn btn-warning fw-bold">Guardar cambios</button>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
+                <div th:if="${mensajeCancelacion != null}" class="alert alert-success fw-bold text-center py-3 shadow-sm">
+                    <span th:text="${mensajeCancelacion}"></span>
                 </div>
-                <div class="text-center mt-4 mb-5">
-                    <a href="/" class="text-muted small text-decoration-none fw-bold">← Volver a la página principal</a>
+                <div th:if="${error != null}" class="alert alert-danger fw-bold text-center py-3 shadow-sm">
+                    <span th:text="${error}"></span>
+                </div>
+                <div th:if="${correoEnviado != null and correoEnviado}" class="alert alert-info text-center">
+                    También enviamos la confirmación a tu correo.
+                </div>
+                <div th:if="${correoEnviado != null and !correoEnviado}" class="alert alert-warning text-center">
+                    La reserva se guardó, pero el correo no pudo enviarse. Revisa la configuración de Gmail.
+                </div>
+
+                <div th:if="${reserva == null and mensajeCancelacion == null}">
+                    <p class="text-muted text-center mb-4">Ingresa tu código de reserva para pre-ordenar platos o
+                        cancelar tu mesa.</p>
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <form th:action="@{/reservar/consultar}" method="post" class="input-group shadow-sm">
+                                <input type="number" name="id" class="form-control border-dark"
+                                       placeholder="ID de Reserva (Ej. 1001)" required>
+                                <button class="btn btn-dark px-4 fw-bold" type="submit">BUSCAR</button>
+                            </form>
+                            <div th:if="${busquedaRealizada != null}" class="alert alert-danger mt-3 small">
+                                No se encontró ninguna reserva con ese ID. Por favor, verifica el número.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${reserva != null}" class="border-top pt-4">
+                    <div th:if="${mensajeGuardado != null}" class="alert alert-success mt-3 small text-center" th:text="${mensajeGuardado}"></div>
+
+                    <div class="row">
+
+                        <div class="col-md-4 mb-4">
+                            <div class="bg-white p-3 rounded border">
+                                <h5 class="fw-bold text-success mb-3">Reserva Activa</h5>
+                                <p class="mb-1 small text-muted text-uppercase fw-bold">Cliente</p>
+                                <p class="mb-3 fw-bold" th:text="${reserva.usuario.nombre}"></p>
+
+                                <p class="mb-1 small text-muted text-uppercase fw-bold">Fecha y Hora</p>
+                                <p class="mb-3" th:text="${reserva.fecha} + ' a las ' + ${reserva.hora}"></p>
+
+                                <p class="mb-1 small text-muted text-uppercase fw-bold">Mesa Asignada</p>
+                                <p class="mb-3">Mesa N° <span class="fw-bold"
+                                                              th:text="${reserva.mesa.numero}"></span></p>
+
+                                <p class="mb-1 small text-muted text-uppercase fw-bold">Código de Gestión</p>
+                                <p class="mb-4"><span class="badge bg-dark fs-6"
+                                                      th:text="${reserva.idReserva}"></span></p>
+
+                                <form th:action="@{/reservar/eliminar/{id}(id=${reserva.idReserva})}" method="post"
+                                      onsubmit="return confirm('¿Estás seguro de que deseas cancelar tu reserva por completo?')">
+                                    <button type="submit" class="btn btn-outline-danger w-100 fw-bold">
+                                        CANCELAR TODA LA RESERVA
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8 border-start ps-md-4">
+                            <h5 class="fw-bold mb-4">Añadir platos o experiencias al pedido</h5>
+
+                            <div class="d-flex justify-content-between mb-3 align-items-start gap-2">
+                                <form th:action="@{/reservar/buscarPlato}" method="post" class="flex-grow-1">
+                                    <input type="hidden" name="idReserva" th:value="${reserva.idReserva}">
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" name="termino" class="form-control border-secondary"
+                                               placeholder="Buscar plato... Ej. Ceviche" required>
+                                        <button class="btn btn-dark fw-bold" type="submit">BUSCAR</button>
+                                    </div>
+                                </form>
+
+                                <form th:action="@{/reservar/listarCarta}" method="post">
+                                    <input type="hidden" name="idReserva" th:value="${reserva.idReserva}">
+                                    <button class="btn btn-sm btn-outline-dark fw-bold" type="submit"
+                                            style="white-space: nowrap;">Ver Toda la Carta</button>
+                                </form>
+                            </div>
+
+                            <div th:if="${carta != null}"
+                                 class="mb-4 p-3 bg-white border border-warning rounded shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold text-warning m-0" th:text="${tituloCarta}"></h6>
+                                    <form th:action="@{/reservar/consultar}" method="post" class="m-0">
+                                        <input type="hidden" name="id" th:value="${reserva.idReserva}">
+                                        <button type="submit" class="btn-close" style="font-size: 0.7rem;"></button>
+                                    </form>
+                                </div>
+
+                                <ul class="list-group list-group-flush">
+                                    <li th:each="p : ${carta}"
+                                        class="list-group-item d-flex justify-content-between align-items-center px-0 border-bottom-dashed py-2">
+                                        <div class="pe-3">
+                                            <span class="fw-bold small" th:text="${p.nombre}"></span><br>
+                                            <small class="text-muted" th:text="'S/ ' + ${p.precio}"></small>
+                                        </div>
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-warning shadow-sm btn-add-memoria"
+                                                th:attr="data-id=${p.id_plato}, data-nombre=${p.nombre}, data-precio='S/ ' + ${p.precio}">
+                                            + Añadir
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <h6 class="fw-bold text-muted mb-3 border-bottom pb-2">Tu Pedido Pre-ordenado:</h6>
+
+                            <div th:if="${#lists.isEmpty(reserva.platos)}"
+                                 class="alert alert-light border small text-center text-muted">
+                                Aún no has añadido nada a tu pedido. Usa el buscador o mira la carta.
+                            </div>
+
+                            <ul id="pedidoList" class="list-group list-group-flush mb-3">
+
+                                <li th:each="pedido : ${reserva.platos}"
+                                    class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent"
+                                    th:attr="data-id=${pedido.id_plato}">
+                                    <div>
+                                        <span class="fw-bold text-dark" th:text="${pedido.nombre}"></span><br>
+                                        <small class="text-muted" th:text="'S/ ' + ${pedido.precio}"></small>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3 btn-remove">Quitar</button>
+                                </li>
+
+                            </ul>
+
+                            <!-- Form oculto para enviar los cambios al servidor -->
+                            <form id="formGuardar" th:action="@{/reservar/actualizarPlatos}" method="post" style="display:none;">
+                                <input type="hidden" name="idReserva" th:value="${reserva.idReserva}" />
+                                <!-- inputs de platosIds serán añadidos dinámicamente -->
+                            </form>
+
+                            <div class="d-flex justify-content-end">
+                                <button id="guardarCambios" type="button" class="btn btn-warning fw-bold">Guardar cambios</button>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
 
             </div>
+            <div class="text-center mt-4 mb-5">
+                <a href="/" class="text-muted small text-decoration-none fw-bold">← Volver a la página principal</a>
+            </div>
+
         </div>
     </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Persistencia del ID de Reserva ---
-            const inputId = document.querySelector('input[name="id"]');
-            const idBadge = document.querySelector('.badge.bg-dark');
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Persistencia del ID de Reserva ---
+        const inputId = document.querySelector('input[name="id"]');
+        const idBadge = document.querySelector('.badge.bg-dark');
 
-            if (idBadge) {
-                localStorage.setItem('idReservaGuardado', idBadge.innerText);
+        if (idBadge) {
+            localStorage.setItem('idReservaGuardado', idBadge.innerText);
+        }
+
+        if (inputId && !inputId.value) {
+            let idMemoria = localStorage.getItem('idReservaGuardado');
+            if (idMemoria) {
+                inputId.value = idMemoria;
             }
+        }
 
-            if (inputId && !inputId.value) {
-                let idMemoria = localStorage.getItem('idReservaGuardado');
-                if (idMemoria) {
-                    inputId.value = idMemoria;
+        // --- Gestión del Pedido en Memoria Viva ---
+        const pedidoList = document.getElementById('pedidoList');
+
+        // Escucha global de clics para soportar elementos dinámicos o estáticos
+        document.addEventListener('click', (e) => {
+
+            // 1. LÓGICA PARA AÑADIR PLATO
+            if (e.target && e.target.classList.contains('btn-add-memoria')) {
+                const boton = e.target;
+                const idPlato = boton.getAttribute('data-id');
+                const nombre = boton.getAttribute('data-nombre');
+                const precio = boton.getAttribute('data-precio');
+
+                if (!idPlato) return;
+
+                // CONTROL DE DUPLICADOS: Verificar si el ID ya existe en el pedido temporal
+                const platoDuplicado = pedidoList.querySelector(`[data-id="${idPlato}"]`);
+                if (platoDuplicado) {
+                    alert(`El plato "${nombre}" ya ha sido agregado a tu pedido.`);
+                    return; // Detiene la inserción
                 }
-            }
 
-            // --- Gestión del Pedido en Memoria Viva ---
-            const pedidoList = document.getElementById('pedidoList');
-
-            // Escucha global de clics para soportar elementos dinámicos o estáticos
-            document.addEventListener('click', (e) => {
-
-                // 1. LÓGICA PARA AÑADIR PLATO
-                if (e.target && e.target.classList.contains('btn-add-memoria')) {
-                    const boton = e.target;
-                    const idPlato = boton.getAttribute('data-id');
-                    const nombre = boton.getAttribute('data-nombre');
-                    const precio = boton.getAttribute('data-precio');
-
-                    if (!idPlato) return;
-
-                    // CONTROL DE DUPLICADOS: Verificar si el ID ya existe en el pedido temporal
-                    const platoDuplicado = pedidoList.querySelector(`[data-id="${idPlato}"]`);
-                    if (platoDuplicado) {
-                        alert(`El plato "${nombre}" ya ha sido agregado a tu pedido.`);
-                        return; // Detiene la inserción
-                    }
-
-                    // Crear el nuevo nodo visual para el pedido del cliente
-                    const nuevoItem = document.createElement('li');
-                    nuevoItem.className = 'list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent';
-                    nuevoItem.setAttribute('data-id', idPlato);
-                    nuevoItem.innerHTML = `
+                // Crear el nuevo nodo visual para el pedido del cliente
+                const nuevoItem = document.createElement('li');
+                nuevoItem.className = 'list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent';
+                nuevoItem.setAttribute('data-id', idPlato);
+                nuevoItem.innerHTML = `
                     <div>
                         <span class="fw-bold text-dark">${nombre}</span><br>
                         <small class="text-muted">${precio}</small>
@@ -225,50 +234,50 @@
                     <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3 btn-remove">Quitar</button>
                 `;
 
-                    pedidoList.appendChild(nuevoItem);
+                pedidoList.appendChild(nuevoItem);
+            }
+
+            // 2. LÓGICA PARA QUITAR PLATO (Aplica a los cargados inicialmente y a los nuevos)
+            if (e.target && e.target.classList.contains('btn-remove')) {
+                const elementoLista = e.target.closest('li');
+                if (elementoLista) {
+                    elementoLista.remove();
                 }
-
-                // 2. LÓGICA PARA QUITAR PLATO (Aplica a los cargados inicialmente y a los nuevos)
-                if (e.target && e.target.classList.contains('btn-remove')) {
-                    const elementoLista = e.target.closest('li');
-                    if (elementoLista) {
-                        elementoLista.remove();
-                    }
-                }
-            });
-
-            // --- ENVÍO FINAL AL ENDPOINT /actualizarPlatos ---
-            const guardarBtn = document.getElementById('guardarCambios');
-            if (guardarBtn) {
-                guardarBtn.addEventListener('click', () => {
-                    const form = document.getElementById('formGuardar');
-                    if (!form) return;
-
-                    // Limpiar cualquier input oculto residual generado en clicks previos
-                    Array.from(form.querySelectorAll('input[name="platosIds"]')).forEach(i => i.remove());
-
-                    // Mapear lo que el usuario dejó configurado en el DOM y generar los inputs ocultos
-                    if (pedidoList) {
-                        pedidoList.querySelectorAll('li').forEach(li => {
-                            const id = li.getAttribute('data-id');
-                            if (id) {
-                                const input = document.createElement('input');
-                                input.type = 'hidden';
-                                input.name = 'platosIds';
-                                input.value = id;
-                                form.appendChild(input);
-                            }
-                        });
-                    }
-
-                    // Envío formal vía POST al controlador de Spring
-                    form.submit();
-                });
             }
         });
-    </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        // --- ENVÍO FINAL AL ENDPOINT /actualizarPlatos ---
+        const guardarBtn = document.getElementById('guardarCambios');
+        if (guardarBtn) {
+            guardarBtn.addEventListener('click', () => {
+                const form = document.getElementById('formGuardar');
+                if (!form) return;
+
+                // Limpiar cualquier input oculto residual generado en clicks previos
+                Array.from(form.querySelectorAll('input[name="platosIds"]')).forEach(i => i.remove());
+
+                // Mapear lo que el usuario dejó configurado en el DOM y generar los inputs ocultos
+                if (pedidoList) {
+                    pedidoList.querySelectorAll('li').forEach(li => {
+                        const id = li.getAttribute('data-id');
+                        if (id) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'platosIds';
+                            input.value = id;
+                            form.appendChild(input);
+                        }
+                    });
+                }
+
+                // Envío formal vía POST al controlador de Spring
+                form.submit();
+            });
+        }
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 

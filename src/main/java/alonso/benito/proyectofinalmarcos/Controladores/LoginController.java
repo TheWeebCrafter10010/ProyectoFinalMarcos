@@ -14,18 +14,26 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 @RequestMapping("/usuarios")
 public class LoginController {
+    private final ServicioRegistro servicioRegistro;
 
-    @Autowired
-    private ServicioRegistro servicioRegistro;
+    public LoginController(ServicioRegistro servicioRegistro) {
+        this.servicioRegistro = servicioRegistro;
+    }
 
     @GetMapping("/login")
-    public String mostrarFormularioLogin() {
+    public String mostrarFormularioLogin(@RequestParam(name = "error", required = false) String error,
+                                         @RequestParam(name = "registro", required = false) String registro,
+                                         Model model) {
+        if (error != null) model.addAttribute("error", "Correo o contraseña incorrectos.");
+        if (registro != null) model.addAttribute("mensaje", "Cuenta creada. Ahora puedes iniciar sesión.");
         return "login";
     }
+
     @GetMapping("/registro")
     public String mostrarFormularioRegistro() {
         return "registro";
     }
+
     @PostMapping("/guardar")
     public String procesarRegistro(@RequestParam String nombre,
                                    @RequestParam String email,
@@ -33,37 +41,14 @@ public class LoginController {
                                    Model model) {
         Usuario usuario = new Usuario();
         usuario.setNombre(nombre);
-        usuario.setEmail(email);
+        usuario.setEmail(email.trim().toLowerCase());
         usuario.setPassword(password);
-        boolean exito = servicioRegistro.registrarUsuario(usuario);
 
-        if (exito) {
-
-            return "redirect:/usuarios/login";
-        } else {
-            model.addAttribute("error", "Datos inválidos o el usuario ya existe.");
-            //Usar este modelo para mostrar el error en la vista de registro
-            return "registro";
+        if (servicioRegistro.registrarUsuario(usuario)) {
+            return "redirect:/usuarios/login?registro=true";
         }
-    }
-    @PostMapping("/login")
-    public String procesarLogin(@RequestParam String email,
-                                @RequestParam String password,
-                                HttpSession session,
-                                Model model) {
-
-        Usuario user = servicioRegistro.loginUsuario(email,password);
-
-        if (user!= null) {
-            session.setAttribute("usuario", user);//Guardar el usuario en la sesión para mantenerlo logueado
-            //Con este atributo mostrar el nombre del usuario en todas las paginas y
-            //Armar el html usuario donde estaran sus datos y sus reseñas
-            return "redirect:/index";
-        } else {
-            model.addAttribute("error", "Credenciales inválidas.");
-            //Usar este modelo para mostrar el error en la vista de login
-            return "login";
-        }
+        model.addAttribute("error", "El correo ya existe, es inválido o la contraseña tiene menos de 8 caracteres.");
+        return "registro";
     }
 
 }

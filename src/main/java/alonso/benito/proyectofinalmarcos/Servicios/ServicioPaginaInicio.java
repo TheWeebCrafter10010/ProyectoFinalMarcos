@@ -24,4 +24,7 @@ public class ServicioPaginaInicio {
         //Enviar de 3 a 4 resenas destacadas
         return resenasRepository.findTop3ByOrderByCalificacionDesc();
     }
+    public List<Plato> obtenerTodosPlatos() {
+        return platoRepository.findAll();
+    }
 }

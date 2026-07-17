@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administración Avanzado | Sabor y Tradición</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3">
+        <div class="container">
+            <span class="navbar-brand fw-bold fs-3 text-warning"><i class="bi bi-shield-lock"></i> PANEL
+                ADMINISTRATIVO</span>
+            <div class="collapse navbar-collapse justify-content-end">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item"><a class="nav-link text-white fw-semibold px-3" href="/index">Ir al Sitio
+                            Público</a></li>
+                    <li class="nav-item">
+                        <a th:href="@{/usuarios/logout}" class="btn btn-outline-warning btn-sm px-3 ms-2">Cerrar
+                            Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5 mb-5">
+        <div class="card border-0 shadow-sm p-4">
+            <h2 class="fw-bold text-dark mb-4 border-bottom pb-3">Sistema de Gestión Centralizada</h2>
+
+            <ul class="nav nav-tabs mb-4 fw-bold" id="adminTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active text-dark" id="reservas-tab" data-bs-toggle="tab"
+                        data-bs-target="#reservas-pane" type="button" role="tab"><i
+                            class="bi bi-calendar-check-fill text-primary"></i> Reservas</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link text-dark" id="usuarios-tab" data-bs-toggle="tab"
+                        data-bs-target="#usuarios-pane" type="button" role="tab"><i
+                            class="bi bi-people-fill text-success"></i> Usuarios</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link text-dark" id="platos-tab" data-bs-toggle="tab"
+                        data-bs-target="#platos-pane" type="button" role="tab"><i
+                            class="bi bi-egg-fried text-warning"></i> Platos y Menú</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="adminTabsContent">
+
+                <div class="tab-pane fade show active" id="reservas-pane" role="tabpanel"
+                    aria-labelledby="reservas-tab">
+                    <h4 class="fw-bold mb-3 text-secondary">Control Global de Reservaciones</h4>
+                    <div th:if="${#lists.isEmpty(reservas)}" class="alert alert-info text-center">No hay reservas
+                        activas en este momento.</div>
+                    <div th:if="${not #lists.isEmpty(reservas)}" class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Teléfono</th>
+                                    <th>Fecha / Hora</th>
+                                    <th>Mesa</th>
+                                    <th>Pre-orden</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="reserva : ${reservas}">
+                                    <td><span class="badge bg-secondary fs-6" th:text="${reserva.idReserva}"></span>
+                                    </td>
+                                    <td>
+                                        <strong
+                                            th:text="${reserva.usuario != null ? reserva.usuario.nombre : 'Anónimo'}"></strong><br>
+                                        <small class="text-muted"
+                                            th:text="${reserva.usuario != null ? reserva.usuario.email : ''}"></small>
+                                    </td>
+                                    <td th:text="${reserva.telefono}"></td>
+                                    <td th:text="${reserva.fecha} + ' | ' + ${reserva.hora}"></td>
+                                    <td><span class="fw-bold"
+                                            th:text="${reserva.mesa != null ? 'Mesa N° ' + reserva.mesa.numero : 'Sin asignar'}"></span>
+                                    </td>
+                                    <td>
+                                        <ul class="list-unstyled m-0 p-0 small">
+                                            <li th:each="plato : ${reserva.platos}" th:text="'- ' + ${plato.nombre}">
+                                            </li>
+                                            <li th:if="${#lists.isEmpty(reserva.platos)}" class="text-muted fst-italic">
+                                                Sin platos</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/admin/eliminarReserva/{id}(id=${reserva.idReserva})}"
+                                            class="btn btn-danger btn-sm fw-bold">Cancelar</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="usuarios-pane" role="tabpanel" aria-labelledby="usuarios-tab">
+                    <h4 class="fw-bold mb-3 text-secondary">Usuarios Registrados en el Sistema</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>ID Usuario</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Correo Electrónico</th>
+                                    <th>Rol asignado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="user : ${usuarios}">
+                                    <td th:text="${user.id_usuario}"></td>
+                                    <td class="fw-bold" th:text="${user.nombre}"></td>
+                                    <td th:text="${user.email}"></td>
+                                    <td>
+                                        <span
+                                            th:class="${user.rol == 'ADMIN'} ? 'badge bg-danger fs-6' : 'badge bg-secondary fs-6'"
+                                            th:text="${user.rol}"></span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/admin/editarUsuario/{id}(id=${user.id_usuario})}"
+                                            class="btn btn-outline-primary btn-sm fw-bold">
+                                            <i class="bi bi-pencil"></i> Modificar
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="platos-pane" role="tabpanel" aria-labelledby="platos-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold text-secondary m-0">Catálogo del Menú</h4>
+                        <a th:href="@{/admin/nuevoPlato}" class="btn btn-warning btn-sm fw-bold shadow-sm">
+                            <i class="bi bi-plus-circle"></i> Agregar Nuevo Plato
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-warning">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre del Plato</th>
+                                    <th>Categoría</th>
+                                    <th>Precio Base</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="plato : ${platos}">
+                                    <td th:text="${plato.id_plato}"></td>
+                                    <td class="fw-bold" th:text="${plato.nombre}"></td>
+                                    <td>
+                                        <span class="badge bg-info text-dark"
+                                            th:text="${plato.categoria != null ? plato.categoria.nombre : 'General'}"></span>
+                                    </td>
+                                    <td class="fw-bold text-success" th:text="'S/ ' + ${plato.precio}"></td>
+                                    <td>
+                                        <a th:href="@{/admin/editarPlato/{id}(id=${plato.id_plato})}"
+                                           class="btn btn-outline-warning btn-sm fw-bold me-2">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </a>
+                                        <a th:href="@{/admin/eliminarPlato/{id}(id=${plato.id_plato})}"
+                                            class="btn btn-outline-danger btn-sm fw-bold"
+                                            onclick="return confirm('¿Seguro que deseas eliminar este plato definitivamente?')">
+                                            <i class="bi bi-trash"></i> Quitar
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

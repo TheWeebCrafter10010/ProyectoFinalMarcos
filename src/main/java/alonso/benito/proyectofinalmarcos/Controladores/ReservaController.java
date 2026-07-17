@@ -4,54 +4,68 @@ import alonso.benito.proyectofinalmarcos.Enums.ReservaMensaje;
 import alonso.benito.proyectofinalmarcos.Modelos.Plato;
 import alonso.benito.proyectofinalmarcos.Modelos.Reserva;
 import alonso.benito.proyectofinalmarcos.Modelos.Usuario;
+import alonso.benito.proyectofinalmarcos.Repositorios.UsuarioRepository;
 import alonso.benito.proyectofinalmarcos.Servicios.ServicioReserva;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 @Controller
 @RequestMapping("/reservar")
 public class ReservaController {
 
-    ServicioReserva servicioReserva;
+    private final ServicioReserva servicioReserva;
+    private final UsuarioRepository usuarioRepository;
 
-    public ReservaController(ServicioReserva servicioReserva) {
+    public ReservaController(ServicioReserva servicioReserva,
+                             UsuarioRepository usuarioRepository) {
         this.servicioReserva = servicioReserva;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @GetMapping
-    public String formularioReserva(@SessionAttribute(name = "usuario", required = false) Usuario usuario, Model model) {
-
-        //ESTO ES TEMPORAL, ES PARA QUE UN USUARIO NO PUEDA HACER RESERVAS SI NO ESTA LOGUEADO,
-        //SE DEBE ARREGLAR PQ ESTA ES UNA SOLUCION FEA XDD
-        if(usuario == null) {
-            return "login";
+    public String formularioReserva(Model model) {
+        if (!model.containsAttribute("reserva")) {
+            Reserva reserva = new Reserva();
+            reserva.setCantidadPersonas(2);
+            model.addAttribute("reserva", reserva);
         }
-        model.addAttribute("reserva", new Reserva());
+        model.addAttribute("fechaMinima", LocalDate.now());
         return "form_reserva";
     }
 
-    // MEJORAR ESTE METODO, esta haciendo mucho
-    // y el http session se esta pasando muchas veces, se podria manejar de otra forma, pero por ahora lo dejo asi
-    // 9/6/2026 metodo mejorado
-
     @PostMapping("/guardar")
-    public String guardarReserva(HttpSession session, @ModelAttribute Reserva reserva, Model model) {
-
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+    public String guardarReserva(@ModelAttribute Reserva reserva,
+                                 Principal principal,
+                                 Model model) {
+        Usuario usuario = usuarioRepository.findByEmail(principal.getName());
         reserva.setUsuario(usuario);
 
+        if (reserva.getFecha() == null || reserva.getFecha().isBefore(LocalDate.now())
+                || reserva.getHora() == null || reserva.getCantidadPersonas() < 1
+                || reserva.getTelefono() == null || reserva.getTelefono().isBlank()) {
+            model.addAttribute("errorMesas", "Completa correctamente todos los datos de la reserva.");
+            model.addAttribute("fechaMinima", LocalDate.now());
+            return "form_reserva";
+        }
+
         ReservaMensaje resultado = servicioReserva.guardarReserva(reserva);
-        if(resultado == ReservaMensaje.ERROR_SIN_MESAS) {
+        if (resultado == ReservaMensaje.ERROR_SIN_MESAS) {
             model.addAttribute("errorMesas", resultado.getMensaje());
+            model.addAttribute("fechaMinima", LocalDate.now());
             return "form_reserva";
         }
 
         model.addAttribute("reserva", reserva);
+        model.addAttribute("mensajeGuardado", "Reserva creada correctamente.");
+        model.addAttribute("correoEnviado",true);
         return "gestion_reserva";
     }
-
 
     @GetMapping("/gestion")
     public String paginaGestion() {
@@ -59,49 +73,67 @@ public class ReservaController {
     }
 
     @PostMapping("/consultar")
-    public String consultarReserva(@RequestParam("id") int id, Model model) {
-        Reserva encontrada =  servicioReserva.buscarPorId(id);
+    public String consultarReserva(@RequestParam("id") int id, Principal principal, Model model) {
+        Reserva encontrada = servicioReserva.buscarReservaDelUsuario(id, principal.getName());
         model.addAttribute("reserva", encontrada);
         model.addAttribute("busquedaRealizada", true);
+        if (encontrada == null) model.addAttribute("error", "No se encontró una reserva tuya con ese código.");
         return "gestion_reserva";
     }
 
     @PostMapping("/listarCarta")
-    public String listarCarta(@RequestParam("idReserva") int idReserva, Model model) {
-        model.addAttribute("reserva",  servicioReserva.buscarPorId(idReserva));
-        model.addAttribute("carta",  servicioReserva.obtenerCarta());
-        model.addAttribute("tituloCarta", "Carta Completa:");
+    public String listarCarta(@RequestParam("idReserva") int idReserva, Principal principal, Model model) {
+        Reserva reserva = servicioReserva.buscarReservaDelUsuario(idReserva, principal.getName());
+        if (reserva == null) {
+            model.addAttribute("error", "No puedes modificar esa reserva.");
+            return "gestion_reserva";
+        }
+        model.addAttribute("reserva", reserva);
+        model.addAttribute("carta", servicioReserva.obtenerCarta());
+        model.addAttribute("tituloCarta", "Carta completa");
         return "gestion_reserva";
     }
 
     @PostMapping("/buscarPlato")
-    public String buscarPlato(@RequestParam("idReserva") int idReserva, @RequestParam("termino") String termino, Model model) {
-        model.addAttribute("reserva", servicioReserva.buscarPorId(idReserva));
+    public String buscarPlato(@RequestParam("idReserva") int idReserva,
+                              @RequestParam("termino") String termino,
+                              Principal principal,
+                              Model model) {
+        Reserva reserva = servicioReserva.buscarReservaDelUsuario(idReserva, principal.getName());
+        if (reserva == null) {
+            model.addAttribute("error", "No puedes modificar esa reserva.");
+            return "gestion_reserva";
+        }
+        model.addAttribute("reserva", reserva);
         model.addAttribute("carta", servicioReserva.buscarPlatosPorNombre(termino));
-        model.addAttribute("tituloCarta", "Resultados para: '" + termino + "'");
-        model.addAttribute("busquedaPlatoRealizada", true);
+        model.addAttribute("tituloCarta", "Resultados para: " + termino);
         return "gestion_reserva";
     }
 
-
-    // Nuevo endpoint para actualizar platos de la reserva desde el cliente
     @PostMapping("/actualizarPlatos")
     public String actualizarPlatos(@RequestParam("idReserva") int idReserva,
                                    @RequestParam(name = "platosIds", required = false) List<Integer> platosIds,
+                                   Principal principal,
                                    Model model) {
-        Reserva actualizada = servicioReserva.actualizarPlatosReserva(idReserva, platosIds);
+        Reserva actualizada = servicioReserva.actualizarPlatosReserva(idReserva, platosIds, principal.getName());
+        if (actualizada == null) {
+            model.addAttribute("error", "No puedes modificar esa reserva.");
+            return "gestion_reserva";
+        }
         model.addAttribute("reserva", actualizada);
         model.addAttribute("carta", servicioReserva.obtenerCarta());
-        model.addAttribute("tituloCarta", "Carta Completa:");
-        model.addAttribute("mensajeGuardado", "Cambios guardados correctamente.");
+        model.addAttribute("tituloCarta", "Carta completa");
+        model.addAttribute("mensajeGuardado", "Platos actualizados correctamente.");
         return "gestion_reserva";
     }
 
-    @GetMapping("/eliminar/{id}")
-    public String eliminarReserva(HttpSession session, @PathVariable int id, Model model) {
-
-        servicioReserva.cancelarReserva(id);
-        model.addAttribute("mensajeCancelacion", "Tu reserva ha sido cancelada exitosamente.");
-        return "gestion_reserva";
+    @PostMapping("/eliminar/{id}")
+    public String eliminarReserva(@PathVariable int id,
+                                  Principal principal,
+                                  RedirectAttributes redirectAttributes) {
+        boolean eliminada = servicioReserva.cancelarReserva(id,false);
+        redirectAttributes.addFlashAttribute(eliminada ? "mensajeCancelacion" : "error",
+                eliminada ? "Tu reserva fue cancelada correctamente." : "No puedes cancelar esa reserva.");
+        return "redirect:/reservar/gestion";
     }
 }
